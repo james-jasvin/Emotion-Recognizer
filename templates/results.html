@@ -49,7 +49,7 @@
 				{% for vid in output_videos %}
 					<div class="col" style="margin: auto 30px 30px 30px;">
 						<video width="320" height="240" controls>
-			                <source src="{{ url_for('send_file', file_type='video', file_name=vid) }}" type="video/mp4">
+			                <source src="{{ url_for('send_file', file_type='video', file_name=vid) }}" type="video/webm">
 			                <!-- <source src= "/static/uploads/videos/output_videos/{{vid}}" type="video/mp4"> -->
 			            </video>
 					</div>
