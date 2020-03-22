@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="UTF-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	
+	<script>
+		function reloadPage() {
+			location.reload();
+			$("#error").hide();
+		}
+
+		function showLoading() {
+			$("#dropzone").hide();
+			$("#error").hide();
+			$("#loading").show();
+		}
+	</script>
+
+	<link href="https://fonts.googleapis.com/css?family=B612&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+	{{ dropzone.load_css() }}
+	{{ dropzone.style('border: 2px dashed #0087F7; margin: 3%;') }}
+
+	<title> Emotion Recognizer </title>
+	<link rel = "icon" href = "/static/Thonking_Face.png" type = "image/x-icon"> 
+</head>
+
+<body class="text-center bg-light text-dark" onunload="reloadPage();"> <!-- onunload = Loading page using backspace -->
+
+	{% if error %}
+		<div id="error" class="alert alert-danger">
+			<h3><strong>Error:</strong> <a href="#" class="alert-link"> {{ error }} </a> </h3>
+		</div>
+	{% endif %}
+
+	<div class="container" style="font-family: 'B612', sans-serif;">
+		<h1> EMOTION RECOGNIZER </h1>
+		<h4> Works for images as well as videos </h4>
+		<img src="/static/bkgrnd.jpg" > 
+	</div>
+
+	<div id="dropzone" class="container">
+		{{dropzone.create(action='upload_file')}}
+		{{dropzone.load_js()}}
+		{{dropzone.config()}}
+		<a href="{{url_for('results')}}" class="btn btn-primary btn-lg" onclick="showLoading();">Display Results</a>
+		<p> <i> file formats supported, for images, 'bmp', 'jpg', 'png', 'jpeg', for videos, 'mp4', 'avi', 'wmv', 'flv', 'mpeg' </i> </p>
+	</div>
+
+	<div id="loading" class="container" style="display:none; margin: 5% auto 2%;">
+		<div class="spinner-border text-success"></div>
+		<div class="spinner-grow text-success"></div>
+		<div class="spinner-border text-success"></div>
+		<h2 style="color:green"> LOADING... </h2>
+		<div class="spinner-grow text-success"></div>
+		<div class="spinner-border text-success"></div>
+		<div class="spinner-grow text-success"></div>
+	</div>
+
+	<p> No thanks to @ e s o t e r i i k o s </p>
+</body>
+</html>

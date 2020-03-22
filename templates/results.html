@@ -1,0 +1,63 @@
+<style>
+	img {
+	    max-width:400px;
+	    max-height:480px;
+	    width:auto;
+	    height:auto;
+	}
+</style>
+
+<!DOCTYPE html>
+<head>
+	<meta charset="UTF-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	
+	<link href="https://fonts.googleapis.com/css?family=B612&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+	<link rel="stylesheet" href="{{url_for('static', filename='css/new_style.css')}}">
+	
+	<title>Emotion Recognizer</title>
+	<link rel = "icon" href = "/static/Thonking_Face.png" type = "image/x-icon"> 
+
+</head>
+
+<body class="text-center bg-light text-dark" style="background-color: #c7c7c7;">
+	<div class="container" style="font-family: 'B612', sans-serif;">
+		<h1 class="page-header"> Emotion Recognizer </h1>
+	</div>
+
+	<div id="output-container" class="container">
+		<!-- Display images and videos only if their respective lists contain something -->
+		{% if output_images %}
+			<h2 class="page-header"> Image Results </h1>
+			<div id="image-container" class="row">
+				{% for img in output_images %}
+					<div class="col" style="margin-bottom: 10px;">
+						<img src="{{ url_for('send_image', filename=img) }}"> 
+						<!-- Use send_image because we resized image in code, so using direct path like video wont work -->
+					</div>
+				{% endfor %}
+			</div>
+		{% endif %}
+
+		{% if output_videos %}
+			<div class="border-top my-3"></div> <!-- adds horizontal line between Image & Video Results -->
+			<h2 class="page-header" style="margin-top: 30px;"> Video Results </h1>
+			<div id="video-container" class="row">
+				{% for vid in output_videos %}
+					<div class="col" style="margin: auto 30px 30px 30px;">
+						<video width="320" height="240" controls>
+			                <source src= "/static/uploads/videos/output_videos/{{vid}}" type="video/mp4">
+			            </video>
+					</div>
+				{% endfor %}
+			</div>
+		{% endif %}
+
+	</div>
+
+	<p> No thanks to @ e s o t e r i i k o s </p>
+</body>
+</html>
