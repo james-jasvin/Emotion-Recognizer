@@ -121,7 +121,10 @@ def create_video_output(dir_path, output_file_path):
         # Create output_video using 0x00000021 (H264 format) with fixed FPS = 15.0
         # Note: Do not use cv2.Video_fourcc code because it is bugged for H264
         # Also, note that size format is (width, height) and not (height, width)
-        output_video = cv2.VideoWriter(out_file, 0x00000021, 15.0, (int(width), int(height)))
+        
+        output_video = cv2.VideoWriter(out_file, 0x00000021, 10.0, (int(width), int(height)))
+
+        count = 0
 
         while input_video.isOpened():
             ret, frame = input_video.read()
@@ -129,15 +132,18 @@ def create_video_output(dir_path, output_file_path):
             if ret is False:
                 break
 
-            # Resizing frame to 1/4th of its size to save time for detecting faces
-            small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+            if count % 3 == 0:          
+                # Resizing frame to 1/4th of its size to save time for detecting faces
+                small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
-            face_locations = face_recognition.face_locations(small_frame)
-            print(face_locations)
+                face_locations = face_recognition.face_locations(small_frame)
+                print(face_locations)
 
-            detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multiplier=4) # 1/4 = 0.25
+                detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multiplier=4) # 1/4 = 0.25
 
-            output_video.write(frame) # Write each frame to output_video
+                output_video.write(frame) # Write each frame to output_video
+
+            count += 1
 
         input_video.release()
         output_video.release()
