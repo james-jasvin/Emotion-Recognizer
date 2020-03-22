@@ -114,9 +114,14 @@ def delete_directory_files(dir_path):
 
 
 # This route is to send images to UI after resizing it properly (which cannot be done on the front-end side)
-@app.route('/results/<filename>')
-def send_image(filename):
-    return send_from_directory(images_output_folder_path, filename)
+@app.route('/results/<file_type>/<file_name>')
+# def send_image(filename):
+#     return send_from_directory(images_output_folder_path, filename)
+def send_file(file_type, file_name):
+    if file_type == "image":
+        return send_from_directory(images_output_folder_path, file_name)
+    if file_type == "video":
+        return send_from_directory(videos_output_folder_path, file_name)
 
 
 if __name__ == "__main__":
