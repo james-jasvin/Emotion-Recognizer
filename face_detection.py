@@ -70,13 +70,17 @@ output_file_path: The directory path of output images
 This function reads a directory of input images, runs the model and annotates each with class_label and writes them to 
 output image directory
 """
-def create_image_output(dir_path, output_file_path):
+# def create_image_output(dir_path, output_file_path):
+def create_image_output(dir_path, input_images, output_file_path):
     if len(os.listdir(dir_path)) == 0:
         return
 
+    print(input_images)
+
     model = load_model() # Relatively time consuming step, so it is called here instead of annotate function
 
-    for filename in os.listdir(dir_path):
+    # for filename in os.listdir(dir_path):
+    for filename in input_images:
         full_filename = dir_path + '/' + filename
 
         old_image = cv2.imread(full_filename)
@@ -103,13 +107,17 @@ def resize_image_with_aspect_ratio(image, window_height = 500):
     return image
 
 
-def create_video_output(dir_path, output_file_path):
+# def create_video_output(dir_path, output_file_path):
+def create_video_output(dir_path, input_videos, output_file_path):    
     if len(os.listdir(dir_path)) == 0:
         return
 
+    print(input_videos)
+    
     model = load_model() # Relatively time consuming step, so it is called here instead of annotate function
 
-    for file_name in os.listdir(dir_path):
+    #for file_name in os.listdir(dir_path):
+    for file_name in input_videos:
         full_file_name = dir_path + '/' + file_name
 
         out_file = output_file_path + '/' + file_name.split('.')[0] + '.webm'
@@ -176,8 +184,8 @@ def detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multip
 def prediction(image, model):
     # Pre-processing to get image into proper format required for the model
     # Current model requires images in the format:
-    # (number of images, height, width, channels)
-    # So we first resize image to 48x48 then reshape it to (1, 48, 48, 3) because we only have a single image
+    # (number of images, height, width, channels) as a grayscale image, so channels = 1
+    # So we first resize image to 48x48 then reshape it to (1, 48, 48, 1) because we only have a single image
     img = cv2.resize(image, (48, 48))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = np.reshape(gray, (1, 48, 48, 1))

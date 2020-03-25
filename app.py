@@ -5,6 +5,7 @@ from flask import send_from_directory
 from face_detection import create_image_output, create_video_output
 from flask_dropzone import Dropzone
 import shutil
+import uuid
 
 app = Flask(__name__)
 
@@ -29,6 +30,9 @@ app.config['DROPZONE_MAX_FILE'] = 50
 # Set of extensions allowed
 IMAGE_EXTENSIONS = {'bmp', 'jpg', 'png', 'jpeg', 'jpe'}
 VIDEO_EXTENSIONS = {'mp4', 'avi', 'wmv', 'flv', 'mpeg'}
+
+input_images = []
+input_videos = []
 
 # Create a Dropzone (will be accessed in the HTML code)
 dropzone = Dropzone(app)
@@ -60,14 +64,17 @@ def upload_file():
 
             # General good practice of security while using filenames of user uploaded files
             # https://flask.palletsprojects.com/en/1.1.x/quickstart/#file-uploads
-            filename = secure_filename(file.filename)
+            # filename = secure_filename(file.filename)
+            filename = uuid.uuid4().hex + '.' + file.filename.split('.')[-1]
 
             # If file is an allowed image or video then save it in their respective input folder
             if allowed_image(filename):
                 file.save(os.path.join(images_input_folder_path, filename))
+                input_images.append(filename)
 
             if allowed_video(filename):
                 file.save(os.path.join(videos_input_folder_path, filename))
+                input_videos.append(filename)
 
         return "UPLOADING"
 
@@ -80,19 +87,22 @@ def upload_file():
 def results():
     # Whenever uploads are to be processed, clear the image and video output folders, in order to prevent previous
     # outputs from being processed
-    delete_directory_files(images_output_folder_path)
-    create_image_output(dir_path=images_input_folder_path, output_file_path=images_output_folder_path)
+    # delete_directory_files(images_output_folder_path)
+    # create_image_output(dir_path=images_input_folder_path, output_file_path=images_output_folder_path)
+    create_image_output(dir_path=images_input_folder_path, input_images=input_images, output_file_path=images_output_folder_path)
 
     # Delete the images and videos input folders, in order to prevent it being processed for next request
-    delete_directory_files(images_input_folder_path)
-    output_images = os.listdir(images_output_folder_path)
+    # delete_directory_files(images_input_folder_path)
+    # output_images = os.listdir(images_output_folder_path)
+    output_images = input_images
 
     # Repeat the same with videos as well
-    delete_directory_files(videos_output_folder_path)
-    create_video_output(dir_path=videos_input_folder_path, output_file_path=videos_output_folder_path)
-    delete_directory_files(videos_input_folder_path)
-    output_videos = os.listdir(videos_output_folder_path)
-
+    # delete_directory_files(videos_output_folder_path)
+    # create_video_output(dir_path=videos_input_folder_path, output_file_path=videos_output_folder_path)
+    create_video_output(dir_path=videos_input_folder_path, input_videos=input_videos, output_file_path=videos_output_folder_path)
+    # delete_directory_files(videos_input_folder_path)
+    # output_videos = os.listdir(videos_output_folder_path)
+    output_videos = [x.split('.')[0] + '.webm' for x in input_videos]
 
     # If no images and videos were uploaded to the dropzone, then both these lists would be empty
     # In this case, redirect to home page and display Error Message
