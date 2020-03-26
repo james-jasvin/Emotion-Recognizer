@@ -55,6 +55,8 @@ def allowed_video(filename):
 
 @app.route('/uploads', methods=['GET', 'POST'])
 def upload_file():
+    global input_images
+    global input_videos
 
     if request.method == 'POST':
         file_object = request.files
@@ -85,6 +87,9 @@ def upload_file():
 # This route is triggered when "Display Results button is clicked on the home page
 @app.route('/results')
 def results():
+    global input_images
+    global input_videos
+    
     # Whenever uploads are to be processed, clear the image and video output folders, in order to prevent previous
     # outputs from being processed
     # delete_directory_files(images_output_folder_path)
