@@ -114,7 +114,8 @@ def results():
     if len(output_images) == 0 and len(output_videos) == 0:
         return redirect(url_for('home', error="NO FILE UPLOADED"))
     
-    input_images = input_videos = []
+    input_images = []
+    input_videos = []
     
     # Render the results page
     return render_template('results.html', output_images=output_images, output_videos=output_videos)
