@@ -90,6 +90,9 @@ def results():
     global input_images
     global input_videos
     
+    print(input_images)
+    print(input_videos)
+    
     # Whenever uploads are to be processed, clear the image and video output folders, in order to prevent previous
     # outputs from being processed
     # delete_directory_files(images_output_folder_path)
