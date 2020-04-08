@@ -87,6 +87,8 @@ def results():
     # Whenever uploads are to be processed, clear the image and video output folders, in order to prevent previous
     # outputs from being processed
     # delete_directory_files(images_output_folder_path)
+    user_uuid = session['user_uuid']
+    
     create_image_output(dir_path=images_input_folder_path, output_file_path=images_output_folder_path, user_uuid=user_uuid)
 
     # Delete the images and videos input folders, in order to prevent it being processed for next request
