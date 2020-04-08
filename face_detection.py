@@ -70,18 +70,17 @@ output_file_path: The directory path of output images
 This function reads a directory of input images, runs the model and annotates each with class_label and writes them to 
 output image directory
 """
-# def create_image_output(dir_path, output_file_path):
-def create_image_output(dir_path, input_images, output_file_path):
+def create_image_output(dir_path, output_file_path, user_uuid):
     if len(os.listdir(dir_path)) == 0:
         return
 
-    print(input_images)
-
     model = load_model() # Relatively time consuming step, so it is called here instead of annotate function
 
-    # for filename in os.listdir(dir_path):
-    for filename in input_images:
-        full_filename = dir_path + '/' + filename
+    for file_name in os.listdir(dir_path):
+        if user_uuid not in file_name:
+            continue
+
+        full_filename = dir_path + '/' + file_name
 
         old_image = cv2.imread(full_filename)
 
@@ -95,7 +94,7 @@ def create_image_output(dir_path, input_images, output_file_path):
         detect_emotion_and_annotate_frame(image, face_locations, model, scale_multiplier=1)
 
         # Save output image
-        cv2.imwrite(output_file_path + '/' + filename, image)
+        cv2.imwrite(output_file_path + '/' + file_name, image)
 
     print("Output Images created")
 
@@ -107,17 +106,16 @@ def resize_image_with_aspect_ratio(image, window_height = 500):
     return image
 
 
-# def create_video_output(dir_path, output_file_path):
-def create_video_output(dir_path, input_videos, output_file_path):    
+def create_video_output(dir_path, output_file_path, user_uuid):
     if len(os.listdir(dir_path)) == 0:
         return
-
-    print(input_videos)
     
     model = load_model() # Relatively time consuming step, so it is called here instead of annotate function
 
-    #for file_name in os.listdir(dir_path):
-    for file_name in input_videos:
+    for file_name in os.listdir(dir_path):
+        if user_uuid not in file_name:
+            continue
+
         full_file_name = dir_path + '/' + file_name
 
         out_file = output_file_path + '/' + file_name.split('.')[0] + '.webm'
