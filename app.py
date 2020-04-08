@@ -90,40 +90,41 @@ def results():
 	# Whenever uploads are to be processed, clear the image and video output folders, in order to prevent previous
 	# outputs from being processed
 	# delete_directory_files(images_output_folder_path)
-	user_uuid = session['user_uuid']
+	if 'user_uuid' in session:
+		user_uuid = session['user_uuid']
 
-	create_image_output(dir_path=images_input_folder_path, output_file_path=images_output_folder_path, user_uuid=user_uuid)
+		create_image_output(dir_path=images_input_folder_path, output_file_path=images_output_folder_path, user_uuid=user_uuid)
 
-	# Delete the images and videos input folders, in order to prevent it being processed for next request
-	# delete_directory_files(images_input_folder_path)
+		# Delete the images and videos input folders, in order to prevent it being processed for next request
+		# delete_directory_files(images_input_folder_path)
 
-	output_images = []
-	output_videos = []
+		output_images = []
+		output_videos = []
 
-	for filename in os.listdir(images_output_folder_path):
-		if user_uuid in filename:
-			output_images.append(filename)
-	
-	# output_images = os.listdir(images_output_folder_path)
+		for filename in os.listdir(images_output_folder_path):
+			if user_uuid in filename:
+				output_images.append(filename)
+		
+		# output_images = os.listdir(images_output_folder_path)
 
-	# Repeat the same with videos as well
-	# delete_directory_files(videos_output_folder_path)
-	create_video_output(dir_path=videos_input_folder_path, output_file_path=videos_output_folder_path, user_uuid=user_uuid)
-	# delete_directory_files(videos_input_folder_path)
+		# Repeat the same with videos as well
+		# delete_directory_files(videos_output_folder_path)
+		create_video_output(dir_path=videos_input_folder_path, output_file_path=videos_output_folder_path, user_uuid=user_uuid)
+		# delete_directory_files(videos_input_folder_path)
 
-	for filename in os.listdir(videos_output_folder_path):
-		if user_uuid in filename:
-			output_videos.append(filename)
+		for filename in os.listdir(videos_output_folder_path):
+			if user_uuid in filename:
+				output_videos.append(filename)
 
-	# output_videos = os.listdir(videos_output_folder_path)
+		# output_videos = os.listdir(videos_output_folder_path)
 
-	# If no images and videos were uploaded to the dropzone, then both these lists would be empty
-	# In this case, redirect to home page and display Error Message
-	if len(output_images) == 0 and len(output_videos) == 0:
-		return redirect(url_for('home', error="NO FILE UPLOADED"))
-	
-	# Render the results page
-	return render_template('results.html', output_images=output_images, output_videos=output_videos)
+		# If no images and videos were uploaded to the dropzone, then both these lists would be empty
+		# In this case, redirect to home page and display Error Message
+		if len(output_images) == 0 and len(output_videos) == 0:
+			return redirect(url_for('home', error="NO FILE UPLOADED"))
+		
+		# Render the results page
+		return render_template('results.html', output_images=output_images, output_videos=output_videos)
 
 
 # Delete all files in given directory path
