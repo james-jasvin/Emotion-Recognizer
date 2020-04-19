@@ -35,7 +35,7 @@
 			<div id="image-container" class="row">
 				{% for img in output_images %}
 					<div class="col" style="margin-bottom: 10px;">
-						<img src="{{ url_for('send_image', filename=img) }}"> 
+						<img src="{{ url_for('send_file', file_type='image', file_name=img) }}"> 
 						<!-- Use send_image because we resized image in code, so using direct path like video wont work -->
 					</div>
 				{% endfor %}
@@ -49,7 +49,8 @@
 				{% for vid in output_videos %}
 					<div class="col" style="margin: auto 30px 30px 30px;">
 						<video width="320" height="240" controls>
-			                <source src= "/static/uploads/videos/output_videos/{{vid}}" type="video/mp4">
+			                <source src="{{ url_for('send_file', file_type='video', file_name=vid) }}" type="video/webm">
+			                <!-- <source src= "/static/uploads/videos/output_videos/{{vid}}" type="video/mp4"> -->
 			            </video>
 					</div>
 				{% endfor %}
