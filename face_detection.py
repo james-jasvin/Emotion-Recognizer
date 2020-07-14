@@ -28,7 +28,7 @@ def create_webcam_output():
     while True:
         ret, frame = video_capture.read()
 
-        # Reducing frame to 1/2 of its size. Used for faster execution
+        # Reducing frame to 1/4 of its size. Used for faster execution
         small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
         rgb_small_frame = small_frame[:, :, ::-1]
 
