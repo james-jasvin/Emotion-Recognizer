@@ -124,8 +124,7 @@ def create_video_output(dir_path, output_file_path, user_uuid):
         height = input_video.get(cv2.CAP_PROP_FRAME_HEIGHT)
         width = input_video.get(cv2.CAP_PROP_FRAME_WIDTH)
 
-        # Create output_video using 0x00000021 (H264 format) with fixed FPS = 15.0
-        # Note: Do not use cv2.Video_fourcc code because it is bugged for H264
+        # Create output_video using VP8 Format which creates .webm video and with fixed FPS = 10.0
         # Also, note that size format is (width, height) and not (height, width)
         
         output_video = cv2.VideoWriter(out_file, cv2.VideoWriter_fourcc(*'VP80'), 10.0, (int(width), int(height)))
@@ -137,7 +136,8 @@ def create_video_output(dir_path, output_file_path, user_uuid):
 
             if ret is False:
                 break
-
+            
+            # Read every third frame
             if count % 3 == 0:          
                 # Resizing frame to 1/4th of its size to save time for detecting faces
                 small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
