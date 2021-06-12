@@ -5,18 +5,29 @@ import os
 import models
 import numpy as np
 
-# MODEL_NAME = 'Trained_ckplus_model.h5'
-MODEL_NAME = 'model_195.h5'
-class_labels = {0: 'Anger', 1: 'Disgust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
+# Global variables
+MODEL_PATH = 'static/model_195.h5'
+# Read webcam feed for a frame every half a second
+WEBCAM_FRAME_READ_TIME = 0.5 
+# Read every third frame from uploaded video
+VIDEO_FRAME_READ_RATE = 3 
+CLASS_LABELS = {0: 'Anger', 1: 'Disgust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
 
-"""
-Not used in current Flask App, but could in the future :P
-Reads local webcam feed and processes a frame every 0.5 seconds (can modify using WEBCAM_FRAME_READ_TIME variable),
-Annotates result and displays it in real-time
-"""
+
+
+def load_model():
+    model = models.cnn_model_2()
+    model.load_weights(MODEL_PATH)
+    return model
+
+
 def create_webcam_output():
-    WEBCAM_FRAME_READ_TIME = 0.5
-
+    '''
+        Not used in current Flask App, but could in the future :P
+        Reads local webcam feed and processes a frame every 0.5 seconds (can modify using WEBCAM_FRAME_READ_TIME variable),
+        Annotates result and displays it in real-time
+    '''
+    
     model = load_model()
 
     video_capture = cv2.VideoCapture(0)
@@ -33,7 +44,8 @@ def create_webcam_output():
         rgb_small_frame = small_frame[:, :, ::-1]
 
         # Only process every other frame of video to save time
-        if time.time() - start_time >= WEBCAM_FRAME_READ_TIME:  # Check if 0.5 sec has passed
+        # Check if 0.5 sec has passed
+        if time.time() - start_time >= WEBCAM_FRAME_READ_TIME: 
 
             # Find all the faces in the current frame of video
             face_locations = face_recognition.face_locations(rgb_small_frame)
@@ -57,30 +69,34 @@ def create_webcam_output():
     cv2.destroyAllWindows()
 
 
-def load_model():
-    # model = models.model_h6()
-    model = models.cnn_model_2()
-    model.load_weights(MODEL_NAME)
-    return model
+def create_image_output(input_dir_path, output_dir_path, user_uuid):
+    '''
+        This function reads a directory of input images, runs the model and annotates each image with class_label and writes them to 
+        output image directory
 
+        Parameters:
+            input_dir_path: Directory path of input images
+            output_dir_path: The directory path of output images
+            user_uuid: Unique uuid given to the user upon opening the home page of the app
+    '''
 
-"""
-dir_path: Directory path of input images
-output_file_path: The directory path of output images
-This function reads a directory of input images, runs the model and annotates each with class_label and writes them to 
-output image directory
-"""
-def create_image_output(dir_path, output_file_path, user_uuid):
-    if len(os.listdir(dir_path)) == 0:
+    # If there's no input images to process (because user only uploaded videos) then stop processing
+    if len(os.listdir(input_dir_path)) == 0:
         return
 
-    model = load_model() # Relatively time consuming step, so it is called here instead of annotate function
+    # Relatively time consuming step, so minimize calls to this as much as possible
+    model = load_model() 
 
-    for file_name in os.listdir(dir_path):
+    # Iterate through each image in the input directory
+    for file_name in os.listdir(input_dir_path):
+
+        # If given user has uploaded the given image, then its filename would contain user_uuid, so that is how different user's uploads
+        # are distinguished from each other
+        # So if user_uuid is not part of filename, then that file doesn't belong to this user and so skip that file
         if user_uuid not in file_name:
             continue
 
-        full_filename = dir_path + '/' + file_name
+        full_filename = input_dir_path + '/' + file_name
 
         old_image = cv2.imread(full_filename)
 
@@ -89,36 +105,59 @@ def create_image_output(dir_path, output_file_path, user_uuid):
         image = resize_image_with_aspect_ratio(old_image, window_height=500)
 
         face_locations = face_recognition.face_locations(image)
-        print(face_locations)
 
-        detect_emotion_and_annotate_frame(image, face_locations, model, scale_multiplier=1)
+        detect_emotion_and_annotate_frame(image, face_locations, model)
 
         # Save output image
-        cv2.imwrite(output_file_path + '/' + file_name, image)
+        cv2.imwrite(output_dir_path + '/' + file_name, image)
 
     print("Output Images created")
 
 
-def resize_image_with_aspect_ratio(image, window_height = 500):
+def resize_image_with_aspect_ratio(image, window_height=500):
+    '''
+        Resizes image to fixed size while maintaining original image's aspect ratio. This is done so that different images with different sizes
+        can be displayed on the same webpage in tabular format
+    '''
     aspect_ratio = float(image.shape[1])/float(image.shape[0])
     window_width = window_height/aspect_ratio
     image = cv2.resize(image, (int(window_height), int(window_width)))
     return image
 
 
-def create_video_output(dir_path, output_file_path, user_uuid):
-    if len(os.listdir(dir_path)) == 0:
+def create_video_output(input_dir_path, output_dir_path, user_uuid):
+    '''
+        This function reads a directory of input videos, runs the model and annotates each frame of each video with class_label and writes them to 
+        output video directory.
+        The VIDEO_FRAME_READ_RATE global variable determines how often a video's frame will be read for processing (annotation). This is done to save
+        time on the overall processing as reading each frame is redundant
+        According to current setting, every third frame of the video will be read for processing.
+
+        Parameters:
+            input_dir_path: Directory path of input video
+            output_dir_path: The directory path of output video
+            user_uuid: Unique uuid given to the user upon opening the home page of the app
+    '''
+
+    # If there's no input videos to process (because user only uploaded images) then stop processing
+    if len(os.listdir(input_dir_path)) == 0:
         return
     
-    model = load_model() # Relatively time consuming step, so it is called here instead of annotate function
+    # Relatively time consuming step, so minimize calls to this as much as possible
+    model = load_model()
 
-    for file_name in os.listdir(dir_path):
+    # Iterate through each video in the input directory
+    for file_name in os.listdir(input_dir_path):
+
+        # If given user has uploaded the given image, then its filename would contain user_uuid, so that is how different user's uploads
+        # are distinguished from each other
+        # So if user_uuid is not part of filename, then that file doesn't belong to this user and so skip that file
         if user_uuid not in file_name:
             continue
 
-        full_file_name = dir_path + '/' + file_name
+        full_file_name = input_dir_path + '/' + file_name
 
-        out_file = output_file_path + '/' + file_name.split('.')[0] + '.webm'
+        out_file = output_dir_path + '/' + file_name.split('.')[0] + '.webm'
 
         input_video = cv2.VideoCapture(full_file_name)
         height = input_video.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -138,14 +177,16 @@ def create_video_output(dir_path, output_file_path, user_uuid):
                 break
             
             # Read every third frame
-            if count % 3 == 0:          
+            if count % VIDEO_FRAME_READ_RATE == 0:        
+
                 # Resizing frame to 1/4th of its size to save time for detecting faces
                 small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
                 face_locations = face_recognition.face_locations(small_frame)
-                print(face_locations)
 
-                detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multiplier=4) # 1/4 = 0.25
+                # Scale multiplier = 4 since 1/4 = 0.25
+                # so we can obtain the actual face locations on the original frame by multiplying face_locations by 4
+                detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multiplier=4) 
 
                 output_video.write(frame) # Write each frame to output_video
 
@@ -157,8 +198,50 @@ def create_video_output(dir_path, output_file_path, user_uuid):
         print("Output Video created")
 
 
-def detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multiplier):
-    # Display the results
+def prediction(image, model):
+    ''' 
+        This function runs the specified model on the given image to obtain the predicted emotion
+        Pre-processing needs to be done to get the image into the format that is accepted by the model
+        
+        Current model requires images/frames in the format:
+            (number_of_images, height, width, channels) as a grayscale image, so channels = 1
+
+        So we first resize image to 48x48 then reshape it to (1, 48, 48, 1) because we only have a single image
+
+        Parameters:
+            image: Image to predict on
+            model: Model that will run the prediction
+    '''
+
+    img = cv2.resize(image, (48, 48))
+    
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    img = np.reshape(gray, (1, 48, 48, 1))
+    
+    predictions = model.predict_classes(img)
+    print('Predictions:', CLASS_LABELS[predictions[0]])
+    
+    return CLASS_LABELS[predictions[0]]
+
+
+def detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multiplier=1):
+    '''
+        This function draws a rectangle/s on the face location/s
+        Then it runs the model on the face location to obtain emotion prediction
+        It then adds text representing the emotion predicted on the image a few pixels off of the bottom line of the corresponding rectangles
+
+        Parameters:
+            frame: Input video frame or image
+            face_locations: List of face locations in the frame obtained by running the corresponding face_recognition module function on the frame
+            model: Model that will be run on the frame for obtaining predicted emotion
+
+            scale_multiplier: If the original frame was downscaled to obtain face_locations (for saving processing time) 
+            then multiplying the face_locations by the downscaled multiplier can be done to obtain the actual face_locations on the original frame
+            (see create_video_output function to see this logic in action)
+    '''
+
+    # For each face detected in the frame
     for (top, right, bottom, left) in face_locations:
 
         # Multiplying face location by the scale to get corresponding location on the original_frame (for webcam & video)
@@ -170,23 +253,12 @@ def detect_emotion_and_annotate_frame(frame, face_locations, model, scale_multip
         # Draw a box around the face
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
-        # Draw a label with a name below the face
         font = cv2.FONT_HERSHEY_DUPLEX
 
         # Get class_label result from prediction()
         class_label = prediction(frame[top: bottom, left: right][:, :, ::-1], model)
 
+        # Draw a label with a name below the face
         cv2.putText(frame, class_label, (left + 6, bottom + 6), font, 1.5, (255, 255, 255), 1, cv2.LINE_AA)
 
 
-def prediction(image, model):
-    # Pre-processing to get image into proper format required for the model
-    # Current model requires images in the format:
-    # (number of images, height, width, channels) as a grayscale image, so channels = 1
-    # So we first resize image to 48x48 then reshape it to (1, 48, 48, 1) because we only have a single image
-    img = cv2.resize(image, (48, 48))
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = np.reshape(gray, (1, 48, 48, 1))
-    predictions = model.predict_classes(img)
-    print('Predictions:', class_labels[predictions[0]])
-    return class_labels[predictions[0]]

@@ -85,7 +85,7 @@ def results():
 	if 'user_uuid' in session:
 		user_uuid = session['user_uuid']
 
-		create_image_output(dir_path=images_input_folder_path, output_file_path=images_output_folder_path, user_uuid=user_uuid)
+		create_image_output(images_input_folder_path, images_output_folder_path, user_uuid)
 
 		output_images = []
 		output_videos = []
@@ -96,7 +96,7 @@ def results():
 		
 
 		# Repeat the same with videos as well
-		create_video_output(dir_path=videos_input_folder_path, output_file_path=videos_output_folder_path, user_uuid=user_uuid)
+		create_video_output(videos_input_folder_path, videos_output_folder_path, user_uuid)
 
 		for filename in os.listdir(videos_output_folder_path):
 			if user_uuid in filename:
@@ -121,4 +121,4 @@ def send_file(file_type, file_name):
 
 
 if __name__ == "__main__":
-	app.run(debug=True)
+	app.run()
