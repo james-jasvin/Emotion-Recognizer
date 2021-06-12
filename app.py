@@ -85,7 +85,7 @@ def results():
 	if 'user_uuid' in session:
 		user_uuid = session['user_uuid']
 
-		create_image_output(dir_path=images_input_folder_path, output_file_path=images_output_folder_path, user_uuid=user_uuid)
+		create_image_output(images_input_folder_path, images_output_folder_path, user_uuid)
 
 		output_images = []
 		output_videos = []
@@ -96,7 +96,7 @@ def results():
 		
 
 		# Repeat the same with videos as well
-		create_video_output(dir_path=videos_input_folder_path, output_file_path=videos_output_folder_path, user_uuid=user_uuid)
+		create_video_output(videos_input_folder_path, videos_output_folder_path, user_uuid)
 
 		for filename in os.listdir(videos_output_folder_path):
 			if user_uuid in filename:
@@ -108,7 +108,7 @@ def results():
 			return redirect(url_for('home', error="NO FILE UPLOADED"))
 		
 		# Render the results page
-		return render_template('results.html', output_images=output_images, output_videos=output_videos)
+		return render_template('results.html', output_images, output_videos)
 
 
 # This route is to send images to UI after resizing it properly (which cannot be done on the front-end side)
