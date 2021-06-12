@@ -108,7 +108,7 @@ def results():
 			return redirect(url_for('home', error="NO FILE UPLOADED"))
 		
 		# Render the results page
-		return render_template('results.html', output_images, output_videos)
+		return render_template('results.html', output_images=output_images, output_videos=output_videos)
 
 
 # This route is to send images to UI after resizing it properly (which cannot be done on the front-end side)
