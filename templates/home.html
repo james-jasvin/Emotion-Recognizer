@@ -46,7 +46,16 @@
 		{{dropzone.create(action='upload_file')}}
 		{{dropzone.load_js()}}
 		{{dropzone.config()}}
-		<a href="{{url_for('results')}}" class="btn btn-primary btn-lg" onclick="showLoading();">Display Results</a>
+
+
+
+		<!-- Add onsubmit event to this button and avoid submitting via the url_for method -->
+		<!-- The onsubmit event first sends POST request to jobs, then showLoading() then starts polling function -->
+
+		<a href="{{url_for('jobs')}}" class="btn btn-primary btn-lg" onclick="showLoading();">Display Results</a>
+
+
+
 		<p> <i> file formats supported, for images, 'bmp', 'jpg', 'png', 'jpeg', for videos, 'mp4', 'avi', 'wmv', 'flv', 'mpeg' </i> </p>
 	</div>
 

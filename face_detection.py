@@ -69,7 +69,7 @@ def create_webcam_output():
     cv2.destroyAllWindows()
 
 
-def create_image_output(input_dir_path, output_dir_path, user_uuid):
+def create_image_output(input_dir_path, output_dir_path, image_filenames):
     '''
         This function reads a directory of input images, runs the model and annotates each image with class_label and writes them to 
         output image directory
@@ -77,7 +77,7 @@ def create_image_output(input_dir_path, output_dir_path, user_uuid):
         Parameters:
             input_dir_path: Directory path of input images
             output_dir_path: The directory path of output images
-            user_uuid: Unique uuid given to the user upon opening the home page of the app
+            image_filenames: Filenames of images that have been uploaded by given user with given user_uuid (verified in app.py)
     '''
 
     # If there's no input images to process (because user only uploaded videos) then stop processing
@@ -88,13 +88,7 @@ def create_image_output(input_dir_path, output_dir_path, user_uuid):
     model = load_model() 
 
     # Iterate through each image in the input directory
-    for file_name in os.listdir(input_dir_path):
-
-        # If given user has uploaded the given image, then its filename would contain user_uuid, so that is how different user's uploads
-        # are distinguished from each other
-        # So if user_uuid is not part of filename, then that file doesn't belong to this user and so skip that file
-        if user_uuid not in file_name:
-            continue
+    for file_name in image_filenames:
 
         full_filename = input_dir_path + '/' + file_name
 
@@ -125,7 +119,7 @@ def resize_image_with_aspect_ratio(image, window_height=500):
     return image
 
 
-def create_video_output(input_dir_path, output_dir_path, user_uuid):
+def create_video_output(input_dir_path, output_dir_path, video_filenames):
     '''
         This function reads a directory of input videos, runs the model and annotates each frame of each video with class_label and writes them to 
         output video directory.
@@ -136,7 +130,7 @@ def create_video_output(input_dir_path, output_dir_path, user_uuid):
         Parameters:
             input_dir_path: Directory path of input video
             output_dir_path: The directory path of output video
-            user_uuid: Unique uuid given to the user upon opening the home page of the app
+            video_filenames: Filenames of videos that have been uploaded by given user with given user_uuid (verified in app.py)
     '''
 
     # If there's no input videos to process (because user only uploaded images) then stop processing
@@ -147,13 +141,7 @@ def create_video_output(input_dir_path, output_dir_path, user_uuid):
     model = load_model()
 
     # Iterate through each video in the input directory
-    for file_name in os.listdir(input_dir_path):
-
-        # If given user has uploaded the given image, then its filename would contain user_uuid, so that is how different user's uploads
-        # are distinguished from each other
-        # So if user_uuid is not part of filename, then that file doesn't belong to this user and so skip that file
-        if user_uuid not in file_name:
-            continue
+    for file_name in video_filenames:
 
         full_file_name = input_dir_path + '/' + file_name
 
