@@ -1,12 +1,8 @@
 #TODO:
-# Output videos are saved as webm, so while sending video_filenames list to results page, ensure that all video filenames either have no extension
-# or by default check for webm extension
-
-# After polling is complete, the job result will contain video and image filenames list
-# This has to be passed to Flask in order to render 
-# https://stackoverflow.com/questions/54848244/passing-flask-list-to-html
-# It could be possible that using session variables to store both the lists is the most optimal technique as you can now avoid
-# making the URL look extra bulky
+# Clean up both HTML files
+# Recheck main.js file
+# Add comments wherever necessary
+# Update Heroku stuff
 
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify, send_from_directory
 import os
@@ -50,6 +46,14 @@ VIDEO_EXTENSIONS = {'mp4', 'avi', 'wmv', 'flv', 'mpeg'}
 # Create a Dropzone (will be accessed in the HTML code)
 dropzone = Dropzone(app)
 
+# Check if filename is an allowed_image or an allowed_video
+def allowed_image(filename):
+	return '.' in filename and filename.split('.')[-1].lower() in IMAGE_EXTENSIONS
+
+def allowed_video(filename):
+	return '.' in filename and filename.split('.')[-1].lower() in VIDEO_EXTENSIONS
+
+
 @app.route('/')
 @app.route('/home')
 @app.route('/<error>')
@@ -70,16 +74,10 @@ def home(error=None):
 	if error == 101:
 		error = "NO FILE UPLOADED"
 
+	if error == 102:
+		error = "UNAUTHORIZED ACCESS"
+
 	return render_template('home.html', error=error)
-
-
-# Check if filename is an allowed_image or an allowed_video
-def allowed_image(filename):
-	return '.' in filename and filename.split('.')[-1].lower() in IMAGE_EXTENSIONS
-
-
-def allowed_video(filename):
-	return '.' in filename and filename.split('.')[-1].lower() in VIDEO_EXTENSIONS
 
 
 @app.route('/uploads', methods=['POST'])
@@ -121,14 +119,15 @@ def upload_file():
 def jobs():
 	'''
 		This route is triggered when "Display Results" button is clicked on the home page
-		
-
+		It uses user_uuid to parse the input directories and identify which are the user uploaded files
+		If no files were uploaded by user then just redirect to home
+		If files were uploaded then start the Redis job, store filenames in the session dictionary
+		and return the job_id back to the client.
 	'''
 	response_object = {
 		'status': "fail",
-		"error_code": ""
+		"error_code": "102"
 	}
-
 
 	# Check whether user has visited home page first to get user_uuid before coming to results
 	if 'user_uuid' in session:
@@ -150,7 +149,8 @@ def jobs():
 		# If no images and videos were uploaded to the dropzone, then both these lists would be empty
 		# In this case, redirect to home page and display Error Message
 		if len(image_filenames) == 0 and len(video_filenames) == 0:
-			return redirect(url_for('home', error="101"))
+			response_object['error_code'] = 101
+			return jsonify(response_object), 302
 		
 		# Enqueue the prediction job on the Redis Task Queue
 		# The result_ttl=5000 line argument tells RQ how long to hold on to the result of the job for, 
@@ -159,6 +159,12 @@ def jobs():
 			func='app.create_output', 
 			args=(image_filenames, video_filenames),
 			result_ttl=5000)
+
+		# Store the image and video filename lists in the session dictionary
+		# This is because the output files will also have the same names and these lists can be 
+		# accessed once the Redis job finishes processing and then be rendered on the results page
+		session['image_filenames'] = image_filenames
+		session['video_filenames'] = video_filenames
 
 		print(job.get_id())
 
@@ -170,33 +176,51 @@ def jobs():
 		# Respond to request by Client with success code indicating that job has started
 		return jsonify(response_object), 202
 
-
-		# Render the results page
-		# return render_template('results.html', output_images=image_filenames, output_videos=video_filenames)
-
 	return jsonify(response_object), 302
 
-# This route will render the results.html template
-# Temporary solution is using the session variables to obtain filename lists.
+
+@app.route('/jobs/<job_key>', methods=['GET'])
+def get_results(job_key):
+	'''
+		Route that returns job status of given job to the requesting Client. Used for polling the submitted job by the Client
+		
+		Parameters:
+			job_key (str): The job id of the job to return status for
+			
+		Returns:
+			response_object (JSON): If job exists then status is success, else status is error
+			If job exists, then job status can be fetched using response_object['data']['job_status']
+			The result of the job can be fetched for a completed job using,
+			response_object['data']['job_result']
+	'''
+	job = Job.fetch(job_key, connection=conn)
+	
+	# If job exists then return job id and status along with result
+	# But result will only be present if job has actually finished
+	# So this logic checking will be done by the poller function at client-side
+	if job:
+		response_object = {
+			"status": "success",
+			"data": {
+				"job_id": job.get_id(),
+				"job_status": job.get_status(),
+				"job_result": job.result,
+			},
+		}
+	else:
+		response_object = {"status": "error"}
+
+	return jsonify(response_object)
+
+
 @app.route('/results', methods=['GET'])
 def results():
-	pass
-
-def create_output(image_filenames, video_filenames):
 	'''
-		Wrapper function that executes both image and video output prediction functions
-		This is done so that both tasks can be wrapped into the same Redis Job which helps avoid timing issues
-		and besides it is only the Video input that will actually cause delay in web-app functioning, so it doesn't make much sense
-		to create a second job only for processing Image input
+		This route will render the results.html template
+		It takes the list of output image and video filenames as parameters
+		This is why they were stored in the session dictionary in the jobs route
 	'''
-
-	# Process the input images and/or videos and save them to the respective output folders
-	create_image_output(IMAGES_INPUT_FOLDER_PATH, IMAGES_OUTPUT_FOLDER_PATH, image_filenames)
-	create_video_output(VIDEOS_INPUT_FOLDER_PATH, VIDEOS_OUTPUT_FOLDER_PATH, video_filenames)
-
-	# WRITE RESPONSE_OBJECT HERE
-	# PERHAPS ADD BOTH LISTS TO SESSION DICT AT THIS POINT
-	# response_object should contain, success, user_uuid, both filename lists
+	return render_template('results.html', output_images=session['image_filenames'], output_videos=session['video_filenames'])
 
 
 @app.route('/results/<file_type>/<file_name>')
@@ -207,10 +231,38 @@ def send_file(file_type, file_name):
 	if file_type == "image":
 		return send_from_directory(IMAGES_OUTPUT_FOLDER_PATH, file_name)
 
-	# IMPORTANT
-	# For videos, remove extension and append webm as the final extension
+	# For videos, remove extension and append webm as the final extension because we convert all videos to webm format
 	if file_type == "video":
-		return send_from_directory(VIDEOS_OUTPUT_FOLDER_PATH, file_name)
+		webm_file_name = file_name.split('.')[0] + '.webm'
+		return send_from_directory(VIDEOS_OUTPUT_FOLDER_PATH, webm_file_name)
+
+
+def create_output(image_filenames, video_filenames):
+	'''
+		Wrapper function that executes both image and video output prediction functions
+		This is done so that both tasks can be wrapped into the same Redis Job which helps avoid timing issues
+		and besides it is only the Video input that will actually cause delay in web-app functioning, so it doesn't make much sense
+		to create a second job only for processing Image input
+
+		Parameters:
+		image_filenames: List of input image filenames, same filenames are used for output images
+		video_filenames: Same but for input videos
+	'''
+
+	# Process the input images and/or videos and save them to the respective output folders
+	create_image_output(IMAGES_INPUT_FOLDER_PATH, IMAGES_OUTPUT_FOLDER_PATH, image_filenames)
+	create_video_output(VIDEOS_INPUT_FOLDER_PATH, VIDEOS_OUTPUT_FOLDER_PATH, video_filenames)
+
+	# Job result JSON
+	# This will be sent to the client once the Redis job finishes
+	# Contains the image and video filenames as parameters which are redundant at this point because they are used in the session dictionary anyways
+	# But I'm keeping it here in case the session method has some flaws down the line
+	response_object = {
+		"status": "success",
+		"user_uuid": user_uuid,
+		"image_filenames": image_filenames
+		"video_filenames": video_filenames
+	}
 
 
 if __name__ == "__main__":
