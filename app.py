@@ -252,7 +252,7 @@ def create_output(image_filenames, video_filenames):
 	response_object = {
 		"status": "success",
 		"user_uuid": user_uuid,
-		"image_filenames": image_filenames
+		"image_filenames": image_filenames,
 		"video_filenames": video_filenames
 	}
 
