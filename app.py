@@ -9,7 +9,7 @@ from rq.job import Job
 from worker import conn
 
 app = Flask(__name__)
-app.secret_key = os.environ['SECRET_KEY']
+app.secret_key = os.urandom(24)
 
 # Redis Task Queue that will handle all jobs
 queue = Queue(connection=conn)
@@ -50,6 +50,7 @@ def allowed_video(filename):
 @app.route('/')
 @app.route('/home')
 @app.route('/<error>')
+@app.route('/home/<error>')
 def home(error=None):
 	'''
 		Route that is triggered when user reaches home page. 
@@ -251,7 +252,6 @@ def create_output(image_filenames, video_filenames):
 	# But I'm keeping it here in case the session method has some flaws down the line
 	response_object = {
 		"status": "success",
-		"user_uuid": session['user_uuid'],
 		"image_filenames": image_filenames,
 		"video_filenames": video_filenames
 	}

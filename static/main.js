@@ -67,8 +67,11 @@ $(document).ready(function() {
 				}
 			})
 			.fail((err) => {
+				// This is triggered when POST request returns 302 response, i.e., no file uploaded case
 				console.log("Failed form submission");
 				console.log(err);
+				var error_code = err['responseJSON']['error_code'];
+				window.location.replace('../home/' + error_code);
 			});
 		}
 	}
@@ -90,7 +93,7 @@ function getJobStatus(jobID) {
 		var jobStatus = res['data']['job_status'];
 
 		if (jobStatus === 'finished') {
-			window.location.href = '../results/';
+			window.location.href = '../results';
 			return false;
 		}
 		else if (jobStatus === 'failed') {
