@@ -251,7 +251,7 @@ def create_output(image_filenames, video_filenames):
 	# But I'm keeping it here in case the session method has some flaws down the line
 	response_object = {
 		"status": "success",
-		"user_uuid": user_uuid,
+		"user_uuid": session['user_uuid'],
 		"image_filenames": image_filenames,
 		"video_filenames": video_filenames
 	}
