@@ -1,9 +1,7 @@
-
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify, send_from_directory
 import os
 from face_detection import create_image_output, create_video_output
 from flask_dropzone import Dropzone
-import shutil
 import uuid
 
 from rq import Queue
@@ -260,4 +258,5 @@ def create_output(image_filenames, video_filenames):
 
 
 if __name__ == "__main__":
-	app.run()
+	port = int(os.environ.get('PORT', 5000)) 
+	app.run(host='0.0.0.0', port=port)
