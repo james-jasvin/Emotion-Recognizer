@@ -72,7 +72,7 @@ $(document).ready(function() {
 			});
 		}
 	}
-}
+});
 
 /**
 	* Poller function that asks for job status of given job every 2 seconds via an AJAX GET request to "jobs/job_id" route
