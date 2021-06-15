@@ -1,4 +1,3 @@
-
 function reloadPage() {
 	location.reload();
 	$("#error").hide();
@@ -10,12 +9,26 @@ function showLoading() {
 	$("#loading").show();
 }
 
-
 $(document).ready(function() {
 
 	// These scripts are associated with only home page, so that is why we added class "homePage" to body tag 
 	// of home.html and then check it here in order to ensure which page this is
 	if ($("body").hasClass("homePage")) {
+
+		// If user is on home page but URL bar shows "jobs" or anything else
+		// because of unauthorized access by user to "jobs" endpoint without submitting form
+		// then redirect user to home with Unauthorized access error code (102)
+		var location = window.location.href.split('/');
+		var currentLocation = location[location.length - 1];
+		if (currentLocation == "jobs")
+			window.location.replace("../102");
+
+
+		// The error message has an "x" button that represents close
+		// This Slide Up animation will be triggered whenever that close button is clicked
+		$(".close-button").click(function() {
+			$(".close-button").parent().slideUp(1000);
+		});	
 
 		/*
 			* Onclick event handler on the "Display Results" button which does the following actions,
@@ -29,9 +42,8 @@ $(document).ready(function() {
 		var resultsButton = document.getElementById("results");
 		resultsButton.onclick = function(event) {
 			
-			// Hide the error message on submission
+			// Hide the error message and show loading spinners on submission
 			showLoading();
-
 
 			// Send AJAX POST request to jobs route, processData and contentType are required for file uploads with 
 			// AJAX requests, otherwise it fails

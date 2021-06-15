@@ -1,8 +1,3 @@
-#TODO:
-# Clean up both HTML files
-# Recheck main.js file
-# Add comments wherever necessary
-# Update Heroku stuff
 
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify, send_from_directory
 import os
@@ -70,13 +65,6 @@ def home(error=None):
 		# global uuid for user
 		session['user_uuid'] = str(uuid.uuid4().hex)
 
-
-	if error == 101:
-		error = "NO FILE UPLOADED"
-
-	if error == 102:
-		error = "UNAUTHORIZED ACCESS"
-
 	return render_template('home.html', error=error)
 
 
@@ -84,7 +72,9 @@ def home(error=None):
 def upload_file():
 	'''
 		Flask Dropzone upload route
-		Write stuff
+		When a file is dropped on the Dropzone, that file will be processed by this route asynchronously
+		Steps done by the route,
+		Generates unique filename, checks whether file format is allowed or not and then saves file in the correct input folder
 	'''
 	file_object = request.files
 	
@@ -227,6 +217,10 @@ def results():
 def send_file(file_type, file_name):
 	'''
 		This route is to send images and videos to UI after resizing it properly (which cannot be done on the front-end side)
+
+		Parameters:
+		file_type: Indicates whether file is "image" or "video"
+		file_name: Unique name of file, same for input as well as output files
 	'''
 	if file_type == "image":
 		return send_from_directory(IMAGES_OUTPUT_FOLDER_PATH, file_name)
