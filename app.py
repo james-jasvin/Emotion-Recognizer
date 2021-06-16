@@ -63,7 +63,7 @@ def home(error=None):
 	if 'user_uuid' not in session:
 		# global uuid for user
 		session['user_uuid'] = str(uuid.uuid4().hex)
-		
+
 	return render_template('home.html', error=error)
 
 
@@ -117,6 +117,8 @@ def jobs():
 		'status': "fail",
 		"error_code": "102"
 	}
+
+	print(session)
 
 	# Check whether user has visited home page first to get user_uuid before coming to results
 	if 'user_uuid' in session:
