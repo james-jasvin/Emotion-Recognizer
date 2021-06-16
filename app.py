@@ -60,13 +60,10 @@ def home(error=None):
 		to distinguish user's file uploads from other user's file uploads
 	'''
 
-	# if 'user_uuid' not in session:
-	# 	# global uuid for user
-	# 	session['user_uuid'] = str(uuid.uuid4().hex)
-
-	# global uuid for user
-	session['user_uuid'] = str(uuid.uuid4().hex)
-
+	if 'user_uuid' not in session:
+		# global uuid for user
+		session['user_uuid'] = str(uuid.uuid4().hex)
+		
 	return render_template('home.html', error=error)
 
 
