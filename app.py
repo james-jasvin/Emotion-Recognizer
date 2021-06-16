@@ -1,3 +1,6 @@
+#TODO:
+#Fully debug Session variables
+
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify, send_from_directory
 import os
 from face_detection import create_image_output, create_video_output
@@ -114,7 +117,7 @@ def jobs():
 		and return the job_id back to the client.
 	'''
 	response_object = {
-		'status': "fail",
+		"status": "fail",
 		"error_code": "102"
 	}
 
