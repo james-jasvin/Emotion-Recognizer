@@ -7,6 +7,7 @@ function showLoading() {
 	$("#dropzone").hide();
 	$("#error").hide();
 	$("#loading").show();
+	$("#results").off('click');
 }
 
 $(document).ready(function() {
@@ -41,7 +42,6 @@ $(document).ready(function() {
 
 		var resultsButton = document.getElementById("results");
 		resultsButton.onclick = function(event) {
-			
 			// Hide the error message and show loading spinners on submission
 			showLoading();
 
@@ -77,6 +77,7 @@ $(document).ready(function() {
 	}
 });
 
+
 /**
 	* Poller function that asks for job status of given job every 2 seconds via an AJAX GET request to "jobs/job_id" route
 	* If job has finished execution, i.e., jobStatus = finished, then, send client to results page
@@ -86,7 +87,37 @@ $(document).ready(function() {
 */
 function getJobStatus(jobID) {
 	$.ajax({
-		url: `/jobs/${jobID}`,
+		url: // Hide the error message and show loading spinners on submission
+			showLoading();
+
+			// Send AJAX POST request to jobs route, processData and contentType are required for file uploads with 
+			// AJAX requests, otherwise it fails
+			$.ajax({
+				url: '/jobs',
+				data: "Start Redis job",
+				method: 'POST',
+				processData: false,
+				contentType: false
+			})
+			.done((res) => {
+				// If response has status as fail then it means server-side validation failed, so redirect
+				// to home page with given error_code
+				if (res['status'] === "fail") {
+					var error_code = res['error_code'];
+					window.location.replace('../home/' + error_code);
+				}
+				else {
+					console.log("Calling Poller");
+					getJobStatus(res['job_id']);
+				}
+			})
+			.fail((err) => {
+				// This is triggered when POST request returns 302 response, i.e., no file uploaded case
+				console.log("Failed form submission");
+				console.log(err);
+				var error_code = err['responseJSON']['error_code'];
+				window.location.replace('../home/' + error_code);
+			});`/jobs/${jobID}`,
 		method: 'GET'
 	})
 	.done((res) => {

@@ -209,7 +209,21 @@ def results():
 		It takes the list of output image and video filenames as parameters
 		This is why they were stored in the session dictionary in the jobs route
 	'''
-	return render_template('results.html', output_images=session['image_filenames'], output_videos=session['video_filenames'])
+	# This means that user just typed /results in the URL bar to reach here in which case, reject the request and send back to home
+	if 'image_filenames' not in session and 'video_filenames' not in session:
+		return redirect(url_for('home', error=102))
+
+
+	# Once user has reached results page successfully, i.e., they can see the output for uploaded files
+	# It represents the end of a session, as most likely the uploaded files will not be used again by the same user
+	# So by resetting the user_uuid at this point, we are essentially starting a new session and new files will be accepted
+	# instead of using the same files stored in image_filenames and video_filenames 
+	session['user_uuid'] = str(uuid.uuid4().hex)
+	
+	image_filenames = [] if 'image_filenames' not in session else session['image_filenames']
+	video_filenames = [] if 'video_filenames' not in session else session['video_filenames']
+
+	return render_template('results.html', output_images=image_filenames, output_videos=video_filenames)
 
 
 @app.route('/results/<file_type>/<file_name>')

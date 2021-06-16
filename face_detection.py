@@ -14,7 +14,6 @@ VIDEO_FRAME_READ_RATE = 3
 CLASS_LABELS = {0: 'Anger', 1: 'Disgust', 2: 'Fear', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
 
 
-
 def load_model():
     model = models.cnn_model_2()
     model.load_weights(MODEL_PATH)
