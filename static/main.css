@@ -1,0 +1,42 @@
+#header {
+	font-family: 'B612', sans-serif;
+}
+
+#results {
+	margin: 20px;
+}
+
+#error {
+	margin-top: 20px; 
+	display: inline-block;
+}
+
+.close-button {
+	margin-left: 5px;
+	cursor: pointer;
+	color: red;
+}
+
+#loading {
+	display:none; 
+	margin: 5% auto 2%;
+}
+
+#resultsPage {
+	background-color: #c7c7c7;
+}
+
+.output-img {
+    max-width:400px;
+    max-height:480px;
+    width:auto;
+    height:auto;
+}
+
+.img-col {
+	margin-bottom: 10px;
+}
+
+.vid-col {
+	margin: auto 30px 30px 30px;
+}

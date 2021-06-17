@@ -1,9 +1,10 @@
+# Collection of various TensorFlow models that were used for training the input data on. 
+# In the final version, the cnn_model_2 is being used for making predictions.
+
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, AveragePooling2D, Flatten, Dense, Dropout, BatchNormalization
 from tensorflow.keras.regularizers import l1, l2, l1_l2
 
-
-# Creating and training the model for images of dimensions 48 * 48 with 3 channels
 def model1():
     m1 = tf.keras.models.Sequential([
         tf.keras.layers.Conv2D(16, (3, 3), activation='relu', input_shape=(256,256,3)),
@@ -18,12 +19,9 @@ def model1():
         tf.keras.layers.Dense(6, activation='softmax')
 
     ])
-    # print(m1.summary())
 
     return m1
 
-
-# ck-data
 def model_h5():
     model = tf.keras.models.Sequential([
         tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(48, 48, 3)),
@@ -153,5 +151,4 @@ def cnn_model_2():
         Dense(classes, activation='softmax')
 
     ])
-    # print(m1.summary())
     return m1
