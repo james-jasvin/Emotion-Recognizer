@@ -219,10 +219,12 @@ def results():
 	video_filenames = session['video_filenames']
 
 	# Clear all files that were uploaded by this user because after displaying the files on the results page
-	# These files can essentially be considered as "expired"
+	# This session can essentially be considered as "expired" once the user has reached the results page
+	# And a new session will be created upon hitting the home page again
 	# The "None" is for the case these keys dont actually exist in the session dictionary
 	session.pop('image_filenames', None)
 	session.pop('video_filenames', None)
+	session.pop('user_uuid', None)
 
 	return render_template('results.html', output_images=image_filenames, output_videos=video_filenames)
 
