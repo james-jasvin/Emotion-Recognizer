@@ -1,3 +1,6 @@
+#TODO:
+#Fully debug Session variables
+
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify, send_from_directory
 import os
 from face_detection import create_image_output, create_video_output
@@ -114,9 +117,11 @@ def jobs():
 		and return the job_id back to the client.
 	'''
 	response_object = {
-		'status': "fail",
+		"status": "fail",
 		"error_code": "102"
 	}
+
+	print(session)
 
 	# Check whether user has visited home page first to get user_uuid before coming to results
 	if 'user_uuid' in session:
@@ -264,5 +269,4 @@ def create_output(image_filenames, video_filenames):
 
 
 if __name__ == "__main__":
-	port = int(os.environ.get('PORT', 5000)) 
-	app.run(host='0.0.0.0', port=port)
+	app.run()
