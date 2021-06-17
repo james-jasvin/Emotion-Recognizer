@@ -1,6 +1,3 @@
-#TODO:
-#Fully debug Session variables
-
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify, send_from_directory
 import os
 from face_detection import create_image_output, create_video_output
@@ -12,6 +9,12 @@ from rq.job import Job
 from worker import conn
 
 app = Flask(__name__)
+
+# Can't stress how important this SECRET_KEY is to this app
+# Without a secret_key, the session dictionary will not function
+# So you have to set an environment variable in Heroku called "SECRET_KEY" and initialize it to a random string
+# The os.urandom(16) is to generate a random string in the case where there is no environment variable called SECRET_KEY
+# This should happen only in localhost case, on Heroku, you must initialize this variable in the config
 app.secret_key = os.getenv('SECRET_KEY', os.urandom(16))
 
 # Redis Task Queue that will handle all jobs
@@ -33,7 +36,7 @@ app.config['DROPZONE_UPLOAD_MULTIPLE'] = True
 app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
 app.config['DROPZONE_ALLOWED_FILE_TYPE'] = '.jpg, .png, .bmp, .jpeg, .mp4, .avi, .wmv, .flv, .mpeg'
 app.config['DROPZONE_MAX_FILE_SIZE'] = 20 # 20 MB
-app.config['DROPZONE_MAX_FILE'] = 50
+app.config['DROPZONE_MAX_FILE'] = 10
 
 # Set of extensions allowed
 IMAGE_EXTENSIONS = {'bmp', 'jpg', 'png', 'jpeg', 'jpe'}
@@ -120,8 +123,6 @@ def jobs():
 		"status": "fail",
 		"error_code": "102"
 	}
-
-	print(session)
 
 	# Check whether user has visited home page first to get user_uuid before coming to results
 	if 'user_uuid' in session:
@@ -216,8 +217,13 @@ def results():
 	'''
 	image_filenames = session['image_filenames']
 	video_filenames = session['video_filenames']
+
+	# Clear all files that were uploaded by this user because after displaying the files on the results page
+	# These files can essentially be considered as "expired"
+	# The "None" is for the case these keys dont actually exist in the session dictionary
 	session.pop('image_filenames', None)
 	session.pop('video_filenames', None)
+
 	return render_template('results.html', output_images=image_filenames, output_videos=video_filenames)
 
 
