@@ -9,7 +9,7 @@ from rq.job import Job
 from worker import conn
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv('SECRET_KEY', os.urandom(16))
 
 # Redis Task Queue that will handle all jobs
 queue = Queue(connection=conn)
@@ -209,7 +209,11 @@ def results():
 		It takes the list of output image and video filenames as parameters
 		This is why they were stored in the session dictionary in the jobs route
 	'''
-	return render_template('results.html', output_images=session['image_filenames'], output_videos=session['video_filenames'])
+	image_filenames = session['image_filenames']
+	video_filenames = session['video_filenames']
+	session.pop('image_filenames', None)
+	session.pop('video_filenames', None)
+	return render_template('results.html', output_images=image_filenames, output_videos=video_filenames)
 
 
 @app.route('/results/<file_type>/<file_name>')
